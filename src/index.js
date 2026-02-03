@@ -87,7 +87,19 @@ const corsHeaders = {
 
 // Serve the web interface
 router.get('/', () => {
-  return new Response(getWebInterface(), {
+  return new Response(getWebInterface(''), {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600'
+    }
+  });
+});
+
+// Open the UI with an initial URL (encoded) - public friendly route
+router.get('/go/*', (request) => {
+  const url = new URL(request.url);
+  const initial = decodeURIComponent(url.pathname.replace('/go/', '')) || '';
+  return new Response(getWebInterface(initial), {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'public, max-age=3600'
@@ -197,37 +209,35 @@ router.all('/proxy/*', async (request) => {
     const contentType = response.headers.get('content-type') || '';
     let responseBody = await response.arrayBuffer();
 
-    // Rewrite HTML content for stealth
+    // Rewrite HTML content so navigation stays inside the app
     if (contentType.includes('text/html')) {
       const text = new TextDecoder().decode(responseBody);
-      const rewritten = rewriteHTML(text, parsedUrl.origin);
+      const rewritten = rewriteHTML(text, parsedUrl);
       responseBody = new TextEncoder().encode(rewritten);
     }
 
-    // Rewrite CSS content
+    // Rewrite CSS content to route asset requests through proxy
     if (contentType.includes('text/css')) {
       const text = new TextDecoder().decode(responseBody);
-      const rewritten = rewriteCSS(text, parsedUrl.origin, targetUrl);
+      const rewritten = rewriteCSS(text, parsedUrl, targetUrl);
       responseBody = new TextEncoder().encode(rewritten);
     }
 
-    // Rewrite JavaScript content
+    // Rewrite JavaScript content (light touch)
     if (contentType.includes('application/javascript') || contentType.includes('text/javascript')) {
       const text = new TextDecoder().decode(responseBody);
       const rewritten = rewriteJS(text);
       responseBody = new TextEncoder().encode(rewritten);
     }
 
-    // Build response headers
+    // Build response headers (avoid copying encoding/length when body changed)
     const responseHeaders = new Headers();
     const headersToInclude = [
       'content-type',
-      'content-length',
       'cache-control',
       'expires',
       'etag',
-      'last-modified',
-      'content-encoding'
+      'last-modified'
     ];
 
     response.headers.forEach((value, key) => {
@@ -242,11 +252,16 @@ router.all('/proxy/*', async (request) => {
       responseHeaders.set(key, value);
     });
 
-    // Remove sensitive headers
+    // Remove / sanitize headers that break embedding or leak info
     responseHeaders.delete('server');
     responseHeaders.delete('x-powered-by');
     responseHeaders.delete('x-aspnet-version');
     responseHeaders.delete('content-security-policy');
+    responseHeaders.delete('x-frame-options');
+    responseHeaders.delete('frame-options');
+    responseHeaders.delete('set-cookie');
+    responseHeaders.delete('content-encoding');
+    responseHeaders.delete('content-length');
 
     return new Response(responseBody, {
       status: response.status,
@@ -269,26 +284,52 @@ router.all('/proxy/*', async (request) => {
   }
 });
 
-// Rewrite HTML to fix relative paths
-function rewriteHTML(html, baseOrigin) {
-  return html
-    .replace(/href=["']\/(?!\/)/g, `href="${baseOrigin}/`)
-    .replace(/src=["']\/(?!\/)/g, `src="${baseOrigin}/`)
-    .replace(/action=["']\/(?!\/)/g, `action="${baseOrigin}/`)
-    .replace(/data-src=["']\/(?!\/)/g, `data-src="${baseOrigin}/`)
-    .replace(/<script[^>]*src=["'](?!http|\/\/)/g, (match) => {
-      return match.replace(/src=["']/, `src="${baseOrigin}/`);
-    })
-    .replace(/<link[^>]*href=["'](?!http|\/\/)/g, (match) => {
-      return match.replace(/href=["']/, `href="${baseOrigin}/`);
-    });
+// Rewrite HTML so links/assets route through the proxy and open in-app tabs
+function rewriteHTML(html, parsedUrl) {
+  // Rewrite common attributes (href, src, action, data-src)
+  const attrRegex = /(href|src|action|data-src)=("|')([^"']+)("|')/gi;
+
+  const rewritten = html.replace(attrRegex, (m, attr, q1, val, q2) => {
+    try {
+      const resolved = new URL(val, parsedUrl).toString();
+      const proxied = '/proxy/' + encodeURIComponent(resolved);
+      // For links and forms, notify parent to open a new in-app tab instead of navigating
+      if (attr === 'href' || attr === 'action') {
+        return `${attr}=${q1}${proxied}${q2} onclick="window.top.postMessage({type:'openTab',url:'${proxied}'}, '*'); return false;"`;
+      }
+      return `${attr}=${q1}${proxied}${q2}`;
+    } catch (e) {
+      return m;
+    }
+  });
+
+  // Fix script/link tags that use relative paths
+  const scriptLinkRegex = /(<(?:script|link)[^>]*(?:src|href)=("|')?)([^"' >]+)("|')?/gi;
+  return rewritten.replace(scriptLinkRegex, (m, prefix, q, val, q2) => {
+    try {
+      if (val.startsWith('http') || val.startsWith('//')) return m;
+      const resolved = new URL(val, parsedUrl).toString();
+      const proxied = '/proxy/' + encodeURIComponent(resolved);
+      return `${prefix}${proxied}${q2 || '"'}`;
+    } catch (e) {
+      return m;
+    }
+  });
 }
 
 // Rewrite CSS URLs
-function rewriteCSS(css, baseOrigin, targetUrl) {
-  const baseUrlRegex = /url\(['"]?(?!(?:http|\/|data:))/g;
-  const targetBase = new URL(targetUrl).origin;
-  return css.replace(baseUrlRegex, `url('${targetBase}/`);
+function rewriteCSS(css, parsedUrl, targetUrl) {
+  // Replace relative url(...) references with proxied equivalents
+  return css.replace(/url\(([^)]+)\)/gi, (m, raw) => {
+    let url = raw.trim().replace(/^['"]|['"]$/g, '');
+    try {
+      const resolved = new URL(url, parsedUrl).toString();
+      const proxied = '/proxy/' + encodeURIComponent(resolved);
+      return `url('${proxied}')`;
+    } catch (e) {
+      return m;
+    }
+  });
 }
 
 // Rewrite JavaScript
@@ -309,13 +350,14 @@ export default {
 };
 
 // Web interface HTML
-function getWebInterface() {
+function getWebInterface(initialUrl) {
+  const INITIAL = JSON.stringify(initialUrl || '');
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stealth Proxy - Access Any Site Anonymously</title>
+    <title>Stealth Browser - Access Any Site Anonymously</title>
     <style>
         * {
             margin: 0;
@@ -569,8 +611,8 @@ function getWebInterface() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 Stealth Proxy</h1>
-            <p>Access any website with complete privacy and anonymity</p>
+          <h1>🔐 Stealth Browser</h1>
+          <p>Access any website with complete privacy and anonymity</p>
         </div>
 
         <div class="content">
@@ -609,7 +651,7 @@ function getWebInterface() {
             </div>
 
             <div class="info-section">
-                <h3>Why Use Stealth Proxy?</h3>
+              <h3>Why Use This Service?</h3>
                 <ul>
                     <li>Completely hide your IP address</li>
                     <li>Access geo-restricted content</li>
@@ -629,42 +671,113 @@ function getWebInterface() {
             </div>
 
             <div class="loading" id="loading">
-                Loading... Please wait while we fetch your content securely.
+              Loading... Please wait while we fetch your content securely.
+            </div>
+
+            <!-- Tabs / browser area -->
+            <div id="browser" style="display:none; padding:20px;">
+              <div id="tabBar" style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;"></div>
+              <div id="tabViews" style="border:1px solid #eaeaea; border-radius:8px; height:600px; overflow:hidden;"></div>
             </div>
         </div>
 
         <div class="footer">
-            <p>✓ Built by john • Privacy-First Proxy • Cloudflare Workers</p>
+            <p>✓ Built by john • Privacy-First Access • Cloudflare Workers</p>
         </div>
     </div>
 
     <script>
-        function setExample(url) {
+          function setExample(url) {
             document.getElementById('urlInput').value = url;
-            proxyRequest();
-        }
+            openNewTab(url);
+          }
 
-        function proxyRequest() {
+          function proxyRequest() {
             const url = document.getElementById('urlInput').value.trim();
-            const errorMsg = document.getElementById('errorMsg');
-            const loading = document.getElementById('loading');
-
             if (!url) {
-                showError('Please enter a URL');
-                return;
+              showError('Please enter a URL');
+              return;
             }
+            openNewTab(url);
+          }
 
-            errorMsg.classList.remove('active');
-            loading.classList.add('active');
+          function normalizeUrl(url) {
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+              return 'https://' + url;
+            }
+            return url;
+          }
 
-            // Construct proxy URL
-            let proxyUrl = '/proxy/' + url;
-            
-            // Fetch and display in iframe approach
-            setTimeout(() => {
-                window.location.href = proxyUrl;
-            }, 300);
-        }
+          function openNewTab(rawUrl) {
+            const url = normalizeUrl(rawUrl.trim());
+            if (!url) return;
+            document.getElementById('errorMsg').classList.remove('active');
+            document.getElementById('loading').classList.remove('active');
+            document.getElementById('browser').style.display = 'block';
+
+            const proxied = '/proxy/' + encodeURIComponent(url);
+            const tabId = 'tab-' + Date.now();
+
+            const tabBar = document.getElementById('tabBar');
+            const tabBtn = document.createElement('button');
+            tabBtn.textContent = new URL(url).hostname;
+            tabBtn.id = tabId + '-btn';
+            tabBtn.style.padding = '8px 12px';
+            tabBtn.style.borderRadius = '6px';
+            tabBtn.onclick = () => selectTab(tabId);
+
+            const closeBtn = document.createElement('span');
+            closeBtn.textContent = ' ✕';
+            closeBtn.style.marginLeft = '8px';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.onclick = (e) => { e.stopPropagation(); closeTab(tabId); };
+            tabBtn.appendChild(closeBtn);
+            tabBar.appendChild(tabBtn);
+
+            const tabViews = document.getElementById('tabViews');
+            const iframe = document.createElement('iframe');
+            iframe.src = proxied;
+            iframe.id = tabId + '-view';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = '0';
+            iframe.onload = () => { selectTab(tabId); };
+
+            // Hide existing views
+            Array.from(tabViews.children).forEach(c => c.style.display = 'none');
+            tabViews.appendChild(iframe);
+          }
+
+          function selectTab(tabId) {
+            const tabBar = document.getElementById('tabBar');
+            Array.from(tabBar.children).forEach(btn => btn.style.opacity = '0.6');
+            const btn = document.getElementById(tabId + '-btn');
+            if (btn) btn.style.opacity = '1';
+
+            const tabViews = document.getElementById('tabViews');
+            Array.from(tabViews.children).forEach(v => v.style.display = 'none');
+            const view = document.getElementById(tabId + '-view');
+            if (view) view.style.display = 'block';
+          }
+
+          function closeTab(tabId) {
+            const btn = document.getElementById(tabId + '-btn');
+            if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
+            const view = document.getElementById(tabId + '-view');
+            if (view && view.parentNode) view.parentNode.removeChild(view);
+          }
+
+          // Open tab when proxied page posts a message
+          window.addEventListener('message', (ev) => {
+            try {
+              const data = ev.data || {};
+              if (data && data.type === 'openTab' && data.url) {
+                // data.url will be a proxied path like /proxy/encoded
+                const decoded = decodeURIComponent(data.url.replace('/proxy/', ''));
+                openNewTab(decoded);
+              }
+            } catch (e) {}
+          });
 
         function showError(message) {
             const errorMsg = document.getElementById('errorMsg');
@@ -673,9 +786,13 @@ function getWebInterface() {
             document.getElementById('loading').classList.remove('active');
         }
 
-        // Example theme animation
+        // Example theme animation and initial URL
         window.addEventListener('load', () => {
-            document.body.style.animation = 'fadeIn 0.5s ease-in';
+          document.body.style.animation = 'fadeIn 0.5s ease-in';
+          try {
+            const initial = ${INITIAL};
+            if (initial) openNewTab(initial);
+          } catch (e) {}
         });
     </script>
 </body>
