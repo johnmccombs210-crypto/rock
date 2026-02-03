@@ -1,3 +1,134 @@
+# 🔐 Stealth Proxy — Cloudflare Dashboard (Easy Steps)
+
+This project runs a stealth web proxy on Cloudflare Workers. The instructions below are written very simply so anyone can deploy it using only the Cloudflare dashboard (no terminal needed).
+
+## Super Simple Steps (for beginners — 10-year-old friendly)
+
+1. Open a web browser and go to: https://dash.cloudflare.com — sign in to your Cloudflare account.
+2. In the left menu click **Workers & Pages**, then click **Workers**.
+3. Click **Create Service** or **Create a Worker**. Choose the editor that lets you paste code (Quick Edit / Module editor).
+4. Open the file `src/index.js` in this repository and copy all the text inside it.
+5. Go back to the Cloudflare editor and paste the text into the editor window, replacing any starter code.
+6. Click **Save** and then click **Deploy** (or **Publish**). Cloudflare will give you a web address that ends with `workers.dev`.
+7. Open that web address in your browser. To test the proxy, add `/proxy/google.com` to the end of the address and press Enter — if you see Google, it worked!
+
+Example test address after deploy:
+```
+https://your-name.workers.dev/proxy/google.com
+```
+
+## Use a custom website address (optional)
+
+1. In Cloudflare, click **Add site** and follow the steps to add your domain.
+2. Cloudflare will show two nameservers. In the place you bought your domain (your registrar), change your domain's nameservers to the ones Cloudflare gave you.
+3. In Cloudflare, go to **Workers**, find your Worker, click **Triggers** (or **Add route**), and add this route: `yourdomain.com/*` and select your Worker.
+4. Visit `https://yourdomain.com` after a few minutes — it should show the proxy UI.
+
+## Very quick checklist (copy for a friend)
+
+- Sign in at https://dash.cloudflare.com
+- Workers → Create Worker → Quick Edit
+- Copy-paste `src/index.js` into the editor
+- Save → Deploy → open the `workers.dev` URL
+- Test: add `/proxy/google.com` to the URL
+
+## Simple troubleshooting (if something breaks)
+
+- Blank page after deploy: click **Save** again, then **Deploy**.
+- Proxy shows an error: make sure you pasted the complete `src/index.js` file.
+- Custom domain doesn't work: confirm you changed nameservers where you bought the domain.
+
+## Short notes for grown-ups
+
+- The proxy logic and stealth features are all inside `src/index.js`. Deploying that file into Cloudflare Workers runs the proxy exactly as written.
+- If you plan to share the `workers.dev` link publicly, consider adding simple authentication or rate-limits in the Worker to prevent abuse.
+- Cloudflare free tier has some limits (worker runtime and traffic); for heavy public use review Cloudflare’s plan details.
+
+---
+
+If you want, I can also create a one-click “copyable checklist” paragraph you can paste into a chat or email. Want that? 
+# 🔐 Stealth Proxy - Cloudflare Workers (Cloudflare-only Deployment)
+
+This repository runs a stealth web proxy on Cloudflare Workers. The README below contains only Cloudflare dashboard / browser-based deployment instructions — no terminal commands.
+
+## Table of Contents
+- Deploy via Cloudflare Workers (Quick Edit)
+- Deploy via Cloudflare Pages (GitHub integration)
+- Custom domain & routes (Cloudflare dashboard)
+- Troubleshooting & support
+---
+
+## Deploy via Cloudflare Workers (Dashboard / Quick Edit)
+
+Use this method if you prefer to stay entirely within the Cloudflare dashboard (no terminal):
+
+1. Open the Cloudflare dashboard at https://dash.cloudflare.com and sign in.
+2. In the left-hand menu select **Workers & Pages → Workers**.
+3. Click **Create Service** (or **Create a Worker**), then choose **Quick Edit** or **Add route** depending on the UI.
+4. Open the repository file `src/index.js` in your editor and copy its contents.
+5. In the Worker Quick Edit window, paste the contents of `src/index.js` into the editor.
+6. Click **Save** then **Deploy** (or **Create a route** / **Publish**) — Cloudflare will assign a `workers.dev` subdomain for your Worker.
+7. Test the generated `workers.dev` URL in your browser to confirm the web interface and `/proxy/*` endpoints work.
+
+Notes:
+- Using the dashboard Quick Edit deploys the Worker immediately and is appropriate for quick runs and simple edits.
+- You can edit and redeploy from the dashboard anytime without using a terminal.
+
+---
+---
+
+
+## Custom Domain & Routes (Cloudflare dashboard)
+
+To serve the Worker from your own domain using only the Cloudflare UI:
+
+1. In Cloudflare dashboard select **Websites → Add site** and follow the prompts to add your domain to Cloudflare.
+2. At your domain registrar replace your current nameservers with the Cloudflare nameservers provided during setup (Cloudflare shows them in the dashboard). Wait for propagation.
+3. In the Cloudflare dashboard go to **Workers & Pages → Workers**, find your Worker, and click **Triggers** (or **Add route** / **Create route**).
+4. Add a route pattern like `yourdomain.com/*` and select the Worker to attach to that route.
+5. To configure SSL/HTTPS, Cloudflare will manage certificates automatically once the domain is active in your account.
+6. Visit `https://yourdomain.com` to verify. If you see errors, confirm nameserver propagation and that the domain is active in Cloudflare.
+
+---
+
+---
+
+
+## Deploy via Cloudflare Pages (GitHub integration, browser-only)
+
+Use Cloudflare Pages if you want CI-based deployments via GitHub but prefer to trigger and manage everything from the Cloudflare dashboard.
+
+1. Push your repository to GitHub (you can use the GitHub web interface if you prefer not to use a terminal).
+2. In the Cloudflare dashboard go to **Workers & Pages → Pages** and click **Create a project**.
+3. Choose **Connect to GitHub**, authorize Cloudflare, and select the repository `johnmccombs210-crypto/rock` in the UI.
+4. Configure build settings in the UI (if Pages detects a framework, choose appropriate build command; for a Worker-backed project choose the simplest settings or use a static deploy as a placeholder).
+5. Click **Save and Deploy** — Cloudflare Pages will build and deploy using GitHub integration.
+
+Notes:
+- This flow keeps you inside Cloudflare and GitHub web UIs; no terminal is required.
+- For full Worker functionality, prefer deploying the Worker itself via the Workers dashboard (Quick Edit) and use Pages for static assets if desired.
+
+---
+
+## Troubleshooting & support
+
+- If you can't paste code into the Worker Quick Edit, ensure your Cloudflare account has Workers enabled.
+- If the domain doesn't respond, check that nameservers are updated at your registrar and that Cloudflare shows the domain as active.
+- For further help, open an issue: https://github.com/johnmccombs210-crypto/rock/issues
+
+---
+
+## Where terminal instructions were removed
+
+All terminal-based deployment commands were removed from this README at your request. Use the Cloudflare dashboard steps above to stay within the Cloudflare UI.
+
+---
+
+## Support
+
+If something still fails, open an issue: https://github.com/johnmccombs210-crypto/rock/issues
+
+**End of Cloudflare dashboard-only deployment instructions.**
 # 🔐 Stealth Proxy - Cloudflare Workers Edition
 
 A powerful, production-ready web proxy that runs on Cloudflare's free tier. Perfect for streaming services like GeForce Now, bypassing restrictions, and maintaining complete anonymity.

@@ -42,33 +42,17 @@ A **complete, production-ready stealth web proxy** with **THREE browser-based de
 ## 🚀 HOW TO GET STARTED
 
 ### Option A: Just Open a File (EASIEST!)
-```
-1. Go to your rock/ folder
-2. Double-click any of these files:
-   - index.html (start here!)
-   - setup.html (detailed)
-   - deploy.html (quick)
-3. A browser window opens
-4. Follow the on-screen instructions
-5. Done!
-```
 
-### Option B: Use Terminal Commands
-From the `rock/` directory:
-```bash
-# Mac/Linux:
-open index.html
+1. Open the project folder in your file explorer.
+2. Double-click one of these files to open in your browser:
+  - `index.html` (start here!)
+  - `setup.html` (detailed)
+  - `deploy.html` (quick)
+3. Follow the on-screen, browser-based instructions to deploy via Cloudflare dashboard.
 
-# Windows:
-start index.html
-```
-
-### Option C: Old-School Terminal (Still Works!)
-```bash
-npm install
-npx wrangler login
-npm run deploy
-```
+Notes:
+- This repository is designed for browser-only deployment flows; no terminal is required.
+- For Cloudflare dashboard-specific guidance (Workers Quick Edit, Pages, and custom domain setup), see `README.md`.
 
 ---
 
@@ -284,9 +268,6 @@ Then: Follow step-by-step instructions
 ✨ OPTION 3 (Quick)
 Open: deploy.html
 Then: Use the wizard interface
-
-✨ OPTION 4 (Terminal)
-Run: npm install && npx wrangler login && npm run deploy
 ```
 
 ---
