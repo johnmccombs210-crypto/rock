@@ -13,14 +13,13 @@ A powerful, production-ready web proxy that runs on Cloudflare's free tier. Perf
 ✅ **Web Interface** - Beautiful, user-friendly dashboard  
 ✅ **No Terminal Needed** - Deploy entirely from your browser  
 
-## ⚡ Quick Start (No Terminal Required!)
+## ⚡ Quick Start & Deployment (All in this README)
 
-### Open One of These:
+You can deploy this project in three ways — all instructions are included here so you don't need the separate HTML/MD deploy files.
 
-1. **[setup.html](setup.html)** - Setup wizard with instructions
-2. **[deploy.html](deploy.html)** - One-click deployment interface
-
-Just open in your browser and follow the steps!
+1) Browser-assisted (no terminal): open `index.html` in a browser for a guided interface.  
+2) Manual (copy & paste): follow the commands below.  
+3) One-click (GitHub/Cloudflare integration): connect your repo to Cloudflare Pages or use CI to run the commands below.
 
 ---
 
