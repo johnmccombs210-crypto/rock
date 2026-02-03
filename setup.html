@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stealth Proxy - Quick Start</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .option {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .option h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .option p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .code-box {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .code-box:hover {
+            background: #1a202c;
+            color: #e2e8f0;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+
+        .success-box {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Stealth Proxy Setup</h1>
+
+        <div class="card">
+            <h2>Choose Your Deployment Method</h2>
+            <p>Select the easiest option for you:</p>
+
+            <div class="btn-group">
+                <a href="deploy.html" class="option">
+                    <h3>🚀 One-Click Deploy</h3>
+                    <p>Fastest way - Everything handled in your browser</p>
+                </a>
+                <a href="#manual-deploy" class="option">
+                    <h3>⚙️ Manual Deploy</h3>
+                    <p>Copy-paste commands - Full control</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="card" id="manual-deploy">
+            <h2>Manual Deployment (Copy & Paste)</h2>
+            
+            <div class="info-box">
+                <strong>Prerequisites:</strong>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Free Cloudflare account (or create one at cloudflare.com)</li>
+                    <li>Node.js installed (download from nodejs.org)</li>
+                </ul>
+            </div>
+
+            <h3 style="color: #667eea; margin-top: 20px;">Step 1: Install Dependencies</h3>
+            <div class="code-box" onclick="copyToClipboard(this)">npm install</div>
+
+            <h3 style="color: #667eea; margin-top: 20px;">Step 2: Login to Cloudflare</h3>
+            <div class="code-box" onclick="copyToClipboard(this)">npx wrangler login</div>
+            <p style="font-size: 0.9em; color: #666;">A browser window will open to authenticate with Cloudflare</p>
+
+            <h3 style="color: #667eea; margin-top: 20px;">Step 3: Deploy!</h3>
+            <div class="code-box" onclick="copyToClipboard(this)">npm run deploy</div>
+
+            <div class="success-box">
+                <strong>✓ That's it!</strong> Your proxy will be live at a URL like: <code>https://stealth-proxy-xxx.workers.dev</code>
+            </div>
+
+            <h3 style="color: #667eea; margin-top: 20px;">Video Guide</h3>
+            <p style="margin-bottom: 15px;">Don't have a terminal? Check out the video tutorial:</p>
+            <div class="info-box">
+                <strong>YouTube Tutorial Available:</strong> Search "Stealth Proxy Cloudflare Workers" for step-by-step video
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>After Deployment</h2>
+            <p>Once deployed, you can:</p>
+            <ul style="margin-left: 20px; margin-top: 10px; color: #555;">
+                <li><strong>Visit your URL</strong> - Beautiful web interface included</li>
+                <li><strong>Enter any website</strong> - Automatically proxied through your server</li>
+                <li><strong>Use in code</strong> - API available for applications</li>
+                <li><strong>Stream GeForce Now</strong> - Optimized for game streaming</li>
+                <li><strong>Access anywhere</strong> - Works on any device with a browser</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Need Help?</h2>
+            <p>Check these resources:</p>
+            <ul style="margin-left: 20px; margin-top: 10px; color: #555;">
+                <li><strong>README.md</strong> - Full documentation and features</li>
+                <li><strong>DEPLOY.md</strong> - Detailed deployment guide</li>
+                <li><strong>QUICKREF.md</strong> - Quick reference card</li>
+                <li><strong>ADVANCED.md</strong> - Advanced customization</li>
+                <li><strong>API.md</strong> - API usage examples</li>
+            </ul>
+        </div>
+
+        <div class="card" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; text-align: center;">
+            <h2 style="color: white;">🎉 Ready to Deploy?</h2>
+            <p style="color: rgba(255, 255, 255, 0.95);">Your privacy-first proxy is just a few clicks away!</p>
+            <div class="btn-group" style="margin-top: 20px;">
+                <a href="deploy.html" style="background: white; color: #48bb78; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; text-decoration: none; transition: all 0.3s;">
+                    Start One-Click Deploy →
+                </a>
+                <div style="background: rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;">
+                    Or use the manual commands above
+                </div>
+            </div>
+        <div class="card" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; text-align: center;">
+            <p style="color: rgba(255, 255, 255, 0.95); font-size: 0.9em;">Built by <strong>john</strong> • Privacy-First Proxy • Open Source</p>
+        </div>
+        function copyToClipboard(element) {
+            const code = element.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const original = element.textContent;
+                element.textContent = '✓ Copied to clipboard!';
+                setTimeout(() => {
+                    element.textContent = original;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

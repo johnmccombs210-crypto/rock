@@ -1,0 +1,43 @@
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      cloudflare_api_token:
+        description: 'Cloudflare API Token'
+        required: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Deploy to Cloudflare
+        run: npm run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      
+      - name: Get deployment URL
+        run: echo "Deployment successful! Your proxy is live at your Cloudflare Workers URL"
+
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Deployment Success
+        run: echo "✓ Stealth Proxy deployed successfully!"

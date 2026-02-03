@@ -1,0 +1,26 @@
+{
+  "name": "stealth-proxy",
+  "version": "1.0.0",
+  "description": "A powerful stealth web proxy for Cloudflare Workers - Deploy to free tier in 2 minutes",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "setup": "bash setup.sh"
+  },
+  "keywords": [
+    "proxy",
+    "cloudflare",
+    "workers",
+    "geforce-now",
+    "streaming",
+    "privacy",
+    "vpn",
+    "anonymous"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.45.0"
+  }
+}

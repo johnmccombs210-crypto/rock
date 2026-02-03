@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stealth Proxy - Deploy Now</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+
+        .section p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-3px);
+        }
+
+        .btn-icon {
+            font-size: 2em;
+        }
+
+        .features {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .features h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .feature-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .footer {
+            background: #f5f7fa;
+            padding: 20px 30px;
+            text-align: center;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .footer p {
+            color: #888;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2.2em;
+            }
+
+            .button-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Stealth Proxy</h1>
+            <p>Deploy in seconds, proxy everything</p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>Choose Your Path</h2>
+                <p style="margin-bottom: 20px;">Select how you want to get started:</p>
+                
+                <div class="button-grid">
+                    <a href="setup.html" class="btn btn-primary">
+                        <span class="btn-icon">🚀</span>
+                        <span>Setup Guide</span>
+                        <span style="font-size: 0.85em; opacity: 0.9;">Complete walkthrough</span>
+                    </a>
+                    <a href="deploy.html" class="btn btn-primary">
+                        <span class="btn-icon">⚡</span>
+                        <span>Quick Deploy</span>
+                        <span style="font-size: 0.85em; opacity: 0.9;">Instant setup</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="features">
+                    <h3>What You Get</h3>
+                    <ul class="feature-list">
+                        <li>Zero-knowledge proxy</li>
+                        <li>Lightning fast</li>
+                        <li>GeForce Now ready</li>
+                        <li>100% encrypted</li>
+                        <li>10M requests/month</li>
+                        <li>Free forever</li>
+                        <li>Web interface</li>
+                        <li>No logs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Just Want Commands?</h2>
+                <p>Copy and run these in your terminal:</p>
+                <div style="background: #2d3748; color: #a0aec0; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9em; margin: 10px 0; cursor: pointer;" onclick="copyCode(this)">
+npm install && npx wrangler login && npm run deploy
+                </div>
+                <p style="font-size: 0.9em; color: #999; margin-top: 5px;">Click to copy</p>
+            </div>
+
+            <div class="info-box">
+                <strong>ℹ️ Heads up:</strong> You'll need a free Cloudflare account and Node.js installed.
+            </div>
+
+            <div class="section">
+                <h2>After Deployment</h2>
+                <p>You'll get a URL like:</p>
+                <div style="background: #f0f0f0; padding: 10px; border-radius: 6px; font-family: monospace; margin: 10px 0;">
+https://stealth-proxy-abc123.workers.dev
+                </div>
+                <p>Visit it in your browser and start proxying any website!</p>
+            </div>
+
+            <div class="section">
+                <h2>Questions?</h2>
+                <ul style="list-style: none; margin: 10px 0;">
+                    <li>📖 <strong>Full Guide:</strong> Check README.md</li>
+                    <li>⚙️ <strong>Advanced:</strong> See ADVANCED.md</li>
+                    <li>📚 <strong>API:</strong> Read API.md</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>✓ Cloudflare Workers • Zero Trust • Enterprise Grade Security</p>
+            <p style="margin-top: 8px; font-size: 0.85em;">Built by <strong>john</strong> • Open Source</p>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(element) {
+            const code = element.textContent.trim();
+            navigator.clipboard.writeText(code).then(() => {
+                const original = element.textContent;
+                element.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    element.textContent = original;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

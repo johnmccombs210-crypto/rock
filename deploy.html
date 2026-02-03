@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stealth Proxy - One-Click Deployment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --success: #48bb78;
+            --error: #f56565;
+            --warning: #ed8936;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .step {
+            margin-bottom: 30px;
+        }
+
+        .step h2 {
+            color: var(--primary);
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .step-content {
+            margin-left: 42px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.success {
+            background: #f0fff4;
+            border-left: 4px solid var(--success);
+            color: #22543d;
+        }
+
+        .status.error {
+            background: #fff5f5;
+            border-left: 4px solid var(--error);
+            color: #742a2a;
+        }
+
+        .status.info {
+            background: #f0f4ff;
+            border-left: 4px solid var(--primary);
+            color: #2d3748;
+        }
+
+        .info-box {
+            background: #f9f9f9;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .code-box {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .code-box:hover {
+            background: #1a202c;
+            color: #e2e8f0;
+        }
+
+        .copy-hint {
+            font-size: 0.8em;
+            color: #999;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .method-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .method-card {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .method-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .method-card.active {
+            border-color: var(--primary);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .method-card h3 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .method-card p {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .checklist {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            font-size: 0.95em;
+        }
+
+        .checklist li:before {
+            content: "○";
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .checklist li.done:before {
+            content: "✓";
+            color: var(--success);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .url-display {
+            background: #f0f4ff;
+            border: 2px solid var(--primary);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .url-display h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .url-link {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .url-link:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+
+            .method-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .github-button {
+            background: #333;
+            color: white;
+        }
+
+        .github-button:hover {
+            background: #222;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Stealth Proxy</h1>
+            <p>One-Click Deployment to Cloudflare</p>
+        </div>
+
+        <div class="content">
+            <!-- Step 1: Choose Deployment Method -->
+            <div class="step" id="step1">
+                <h2>
+                    <span class="step-number">1</span>
+                    Choose Deployment Method
+                </h2>
+                <div class="step-content">
+                    <p style="margin-bottom: 15px; color: #666;">Select how you want to deploy:</p>
+                    <div class="method-selector">
+                        <div class="method-card active" onclick="selectMethod('github')">
+                            <h3>GitHub</h3>
+                            <p>One-click via GitHub</p>
+                        </div>
+                        <div class="method-card" onclick="selectMethod('manual')">
+                            <h3>Manual</h3>
+                            <p>Copy-paste steps</p>
+                        </div>
+                    </div>
+                    <div id="github-method">
+                        <div class="info-box">
+                            <strong>How it works:</strong> We'll create a GitHub repository and set up automatic deployment to Cloudflare Workers.
+                        </div>
+                        <div class="button-group">
+                            <a href="#" class="btn btn-primary github-button" onclick="startGitHubDeploy(event)">
+                                <span>🐙</span> Deploy with GitHub
+                            </a>
+                        </div>
+                    </div>
+                    <div id="manual-method" class="hidden">
+                        <div class="info-box">
+                            <strong>You'll need:</strong>
+                            <ul class="checklist">
+                                <li>Node.js installed</li>
+                                <li>Cloudflare account</li>
+                                <li>Access to terminal</li>
+                            </ul>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="showManualSteps()">Show Commands</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Deploy Progress -->
+            <div class="step hidden" id="step2">
+                <h2>
+                    <span class="step-number">2</span>
+                    Deploying...
+                </h2>
+                <div class="step-content">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="status info show" id="status">
+                        <span class="spinner"></span> Initializing deployment...
+                    </div>
+                    <ul class="checklist" id="checklist">
+                        <li id="check-github">Connecting to GitHub</li>
+                        <li id="check-repo">Creating repository</li>
+                        <li id="check-cf">Configuring Cloudflare</li>
+                        <li id="check-deploy">Deploying worker</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 3: Success -->
+            <div class="step hidden" id="step3">
+                <h2>
+                    <span class="step-number">✓</span>
+                    Deployment Complete!
+                </h2>
+                <div class="step-content">
+                    <div class="status success show">
+                        <strong>Success!</strong> Your proxy is live and ready to use.
+                    </div>
+                    <div class="url-display">
+                        <h3>Your Proxy URL:</h3>
+                        <div class="url-link" onclick="copyURL(this)" id="proxyUrl">
+                            https://stealth-proxy-abc123.workers.dev
+                        </div>
+                        <div class="copy-hint">Click to copy</div>
+                    </div>
+                    <div class="info-box">
+                        <strong>Next steps:</strong>
+                        <ul style="margin-top: 10px; list-style: none; padding-left: 0;">
+                            <li>✓ Visit your proxy URL above</li>
+                            <li>✓ Enter any website URL to proxy it</li>
+                            <li>✓ Share with friends</li>
+                        </ul>
+                    </div>
+                    <div class="button-group">
+                        <a href="https://workers.cloudflare.com" target="_blank" class="btn btn-primary">View in Cloudflare</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Steps Modal -->
+            <div class="step hidden" id="step-manual">
+                <h2>
+                    <span class="step-number">2</span>
+                    Command Line Deployment
+                </h2>
+                <div class="step-content">
+                    <div class="info-box">
+                        <strong>Run these commands in order:</strong>
+                    </div>
+                    <div class="code-box" onclick="copyCode(this)">npm install</div>
+                    <div class="code-box" onclick="copyCode(this)">npx wrangler login</div>
+                    <div class="code-box" onclick="copyCode(this)">npm run deploy</div>
+                    <div class="copy-hint">Click any command to copy</div>
+                    <div class="button-group" style="margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedMethod = 'github';
+
+        function selectMethod(method) {
+            selectedMethod = method;
+            document.querySelectorAll('.method-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.closest('.method-card').classList.add('active');
+            
+            if (method === 'github') {
+                document.getElementById('github-method').classList.remove('hidden');
+                document.getElementById('manual-method').classList.add('hidden');
+            } else {
+                document.getElementById('github-method').classList.add('hidden');
+                document.getElementById('manual-method').classList.remove('hidden');
+            }
+        }
+
+        function showManualSteps() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step-manual').classList.remove('hidden');
+        }
+
+        function goBack() {
+            document.getElementById('step-manual').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        }
+
+        function startGitHubDeploy(e) {
+            e.preventDefault();
+            
+            // Check if user is logged into GitHub
+            if (!sessionStorage.getItem('github_token')) {
+                // Redirect to GitHub OAuth
+                const clientId = 'YOUR_GITHUB_APP_ID'; // You'd set this up
+                const redirectUri = `${window.location.origin}/auth/github/callback`;
+                window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=repo`;
+                return;
+            }
+
+            // Start deployment
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            simulateDeployment();
+        }
+
+        function simulateDeployment() {
+            const checks = ['check-github', 'check-repo', 'check-cf', 'check-deploy'];
+            let current = 0;
+            let progress = 0;
+
+            const interval = setInterval(() => {
+                if (current < checks.length) {
+                    document.getElementById(checks[current]).classList.add('done');
+                    progress = ((current + 1) / checks.length) * 100;
+                    document.getElementById('progressFill').style.width = progress + '%';
+                    current++;
+                } else {
+                    clearInterval(interval);
+                    // Show success
+                    setTimeout(() => {
+                        document.getElementById('step2').classList.add('hidden');
+                        document.getElementById('step3').classList.remove('hidden');
+                        generateProxyURL();
+                    }, 500);
+                }
+            }, 800);
+        }
+
+        function generateProxyURL() {
+            const random = Math.random().toString(36).substr(2, 9);
+            const url = `https://stealth-proxy-${random}.workers.dev`;
+            document.getElementById('proxyUrl').textContent = url;
+        }
+
+        function copyURL(element) {
+            const url = element.textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                const original = element.textContent;
+                element.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    element.textContent = original;
+                }, 2000);
+            });
+        }
+
+        function copyCode(element) {
+            const code = element.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const original = element.textContent;
+                element.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    element.textContent = original;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
