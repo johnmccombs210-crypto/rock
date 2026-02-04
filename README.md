@@ -1,6 +1,13 @@
-# 🔐 Stealth Proxy — Cloudflare Dashboard (Easy Steps)
+# 🔐 Stealth Proxy — Browser-Only Deployment (No Terminal Needed)
 
-This project runs a stealth web proxy on Cloudflare Workers. The instructions below are written very simply so anyone can deploy it using only the Cloudflare dashboard (no terminal needed).
+This repository can be deployed entirely from a web browser using Cloudflare's free plan. Pick one of the two browser-only flows below:
+
+- Workers Quick Edit (paste `src/index.js` into the Cloudflare dashboard)
+- Pages + Pages Functions (connect this GitHub repo to Cloudflare Pages)
+
+Both flows require only a Cloudflare account and a browser. No local terminal, Node.js, or CLI tools are required.
+
+Below are concise, step-by-step browser-only instructions for each flow, plus where to set the optional `PROXY_API_KEY` and how to use GitHub web UI to push your repo if needed.
 
 ## Super Simple Steps (for beginners — 10-year-old friendly)
 
@@ -108,19 +115,19 @@ Notes:
 - This flow keeps you inside Cloudflare and GitHub web UIs; no terminal is required.
 - For full Worker functionality, prefer deploying the Worker itself via the Workers dashboard (Quick Edit) and use Pages for static assets if desired.
 
-### Chromebook (no Linux / locked device)
+### Environment variables & API key (browser-only)
 
-If your Chromebook doesn't support Linux or you cannot run terminal commands locally, you can deploy entirely from the browser:
+If you want to protect your Pages Function with an API key, set `PROXY_API_KEY` in the Cloudflare Pages UI:
 
-1. Push this repository to GitHub (use the GitHub web UI if you can't run `git` locally).
-2. In the Cloudflare dashboard go to **Workers & Pages → Pages** and click **Create a project**.
-3. Choose **Connect to GitHub**, authorize Cloudflare, and select the repository `johnmccombs210-crypto/rock` and branch `main`.
-4. Set the build command to: `npm run build`
-5. Set the build output directory to: `dist`
-6. Leave the Functions directory as `functions` (Pages will pick up `functions/proxy.js` and expose it at `/api/proxy`).
-7. Click **Save and Deploy** — Cloudflare Pages will build and serve the site and Pages Functions.
+1. In the Cloudflare dashboard open your Pages project and go to **Settings → Environment variables**.
+2. Add a new variable named `PROXY_API_KEY` and set a secret value.
+3. In your UI or requests, supply that value with the `x-api-key` request header.
 
-This requires only a browser and a Cloudflare account — no terminal or local Linux required.
+For Workers Quick Edit, add the same variable via the Worker settings UI (find **Settings → Variables** or **Environment variables** for your Worker and add `PROXY_API_KEY`).
+
+Notes:
+- The built-in rate-limiter in this project is a best-effort, in-memory limiter (per instance). For reliable global limits, configure Workers KV or Durable Objects (requires additional setup in the Cloudflare dashboard).
+- Pages exposes `functions/proxy.js` at `/api/proxy` on your Pages domain.
 
 ---
 
@@ -423,6 +430,19 @@ Users are responsible for complying with applicable laws.
 ## Community
 
 Help improve this project! 
+- Star on GitHub ⭐
+- Share with friends 👥
+- Submit pull requests 🚀
+- Report bugs 🐛
+
+---
+
+**Made with ❤️ by john • Privacy-First Proxy for Everyone**
+
+### Quick Start Command
+```bash
+git clone https://github.com/johnmccombs210-crypto/rock.git && cd rock && npm install && npx wrangler login && npm run deploy
+```
 - Star on GitHub ⭐
 - Share with friends 👥
 - Submit pull requests 🚀
