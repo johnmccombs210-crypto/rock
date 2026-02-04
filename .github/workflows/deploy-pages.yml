@@ -1,0 +1,33 @@
+name: Publish to Cloudflare Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        run: npm run build
+
+      - name: Publish to Cloudflare Pages
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          PAGES_PROJECT: ${{ secrets.PAGES_PROJECT }}
+        run: |
+          if [ -z "$PAGES_PROJECT" ]; then
+            echo "PAGES_PROJECT secret not set"; exit 1
+          fi
+          npx wrangler pages publish dist --project-name "$PAGES_PROJECT"

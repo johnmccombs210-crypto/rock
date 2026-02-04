@@ -1,11 +1,13 @@
 {
   "name": "stealth-proxy",
   "version": "1.0.0",
-  "description": "A powerful stealth web proxy for Cloudflare Workers - Deploy to free tier in 2 minutes",
+  "description": "A privacy-focused web proxy UI with a Cloudflare Pages Function back-end",
   "main": "src/index.js",
   "scripts": {
+    "build": "mkdir -p dist && rsync -a --exclude node_modules --exclude .git ./ dist/ || true",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "publish:pages": "npx wrangler pages publish dist --project-name=stealth-proxy",
     "setup": "bash setup.sh"
   },
   "keywords": [
