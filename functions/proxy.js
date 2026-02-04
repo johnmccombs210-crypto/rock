@@ -1,5 +1,35 @@
 export async function onRequest(context) {
   const { request } = context;
+  // Optional: read API key from environment binding (set PROXY_API_KEY in Pages environment)
+  const env = context.env || {};
+  const requiredKey = env.PROXY_API_KEY;
+  if (requiredKey) {
+    const provided = request.headers.get('x-api-key') || '';
+    if (provided !== requiredKey) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+  }
+
+  // Simple in-memory per-IP rate limiter (best-effort, not globally consistent)
+  // Configurable via bindings in future; limits to RATE_LIMIT_MAX per window
+  const RATE_LIMIT_MAX = 120; // requests
+  const RATE_LIMIT_WINDOW = 60 * 1000; // ms
+  try {
+    const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+    globalThis.__rate_limits = globalThis.__rate_limits || new Map();
+    const rl = globalThis.__rate_limits;
+    const now = Date.now();
+    const entry = rl.get(ip) || { count: 0, start: now };
+    if (now - entry.start > RATE_LIMIT_WINDOW) {
+      entry.count = 0;
+      entry.start = now;
+    }
+    entry.count++;
+    rl.set(ip, entry);
+    if (entry.count > RATE_LIMIT_MAX) {
+      return new Response('Rate limit exceeded', { status: 429 });
+    }
+  } catch (e) {}
   const url = new URL(request.url);
 
   // Accept target via query param `url` or via path /api/proxy/<encoded>
@@ -37,6 +67,18 @@ export async function onRequest(context) {
 
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       opts.body = await request.arrayBuffer();
+    }
+
+    // Try serving from the Cache API for GET requests
+    let cacheKey;
+    if (request.method === 'GET' && typeof caches !== 'undefined') {
+      cacheKey = new Request(parsed.toString(), { method: 'GET', headers: {} });
+      try {
+        const cached = await caches.default.match(cacheKey);
+        if (cached) {
+          return cached;
+        }
+      } catch (e) {}
     }
 
     const res = await fetch(parsed.toString(), opts);
@@ -77,9 +119,27 @@ export async function onRequest(context) {
       return new Response(rewritten, { status: res.status, headers: resHeaders });
     }
 
-    // Other content types: passthrough
-    const body = await res.arrayBuffer();
-    return new Response(body, { status: res.status, headers: resHeaders });
+    // Other content types: passthrough and stream when possible
+    try {
+      const bodyStream = res.body;
+      const out = new Response(bodyStream, { status: res.status, headers: resHeaders });
+
+      // Cache successful GET responses (best-effort)
+      if (request.method === 'GET' && res.status === 200 && typeof caches !== 'undefined' && cacheKey) {
+        try {
+          // clone response with caching header
+          const toCache = out.clone();
+          // Note: Cloudflare honors Cache-Control on the response; we add a short TTL
+          toCache.headers.set('Cache-Control', 'public, max-age=60');
+          await caches.default.put(cacheKey, toCache);
+        } catch (e) {}
+      }
+
+      return out;
+    } catch (e) {
+      const body = await res.arrayBuffer();
+      return new Response(body, { status: res.status, headers: resHeaders });
+    }
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,

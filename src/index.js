@@ -77,6 +77,48 @@ const stealthHeaders = {
   'Pragma': 'no-cache'
 };
 
+// Simple rate-limiter and caching helpers (best-effort; per-instance only)
+const RATE_LIMIT_MAX = 120; // requests per window
+const RATE_LIMIT_WINDOW = 60 * 1000; // ms
+
+async function checkRateLimit(request) {
+  try {
+    const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+    globalThis.__rate_limits = globalThis.__rate_limits || new Map();
+    const rl = globalThis.__rate_limits;
+    const now = Date.now();
+    const entry = rl.get(ip) || { count: 0, start: now };
+    if (now - entry.start > RATE_LIMIT_WINDOW) {
+      entry.count = 0;
+      entry.start = now;
+    }
+    entry.count++;
+    rl.set(ip, entry);
+    if (entry.count > RATE_LIMIT_MAX) return false;
+  } catch (e) {}
+  return true;
+}
+
+async function maybeServeFromCache(request, targetUrl) {
+  if (request.method !== 'GET' || typeof caches === 'undefined') return null;
+  try {
+    const cacheKey = new Request(targetUrl, { method: 'GET' });
+    const cached = await caches.default.match(cacheKey);
+    if (cached) return cached;
+  } catch (e) {}
+  return null;
+}
+
+async function maybeCacheResponse(request, targetUrl, response) {
+  if (request.method !== 'GET' || typeof caches === 'undefined') return;
+  try {
+    const cacheKey = new Request(targetUrl, { method: 'GET' });
+    const toCache = response.clone();
+    toCache.headers.set('Cache-Control', 'public, max-age=60');
+    await caches.default.put(cacheKey, toCache);
+  } catch (e) {}
+}
+
 // CORS headers for origin spoofing
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -122,6 +164,19 @@ router.options('/*', () => {
 // Main proxy endpoint
 router.all('/proxy/*', async (request) => {
   try {
+    // Optional API key via Pages function env: available as `GLOBAL` env binding in Pages Functions
+    const env = (typeof globalThis !== 'undefined' && globalThis.PROXY_API_KEY) ? { PROXY_API_KEY: globalThis.PROXY_API_KEY } : {};
+    const requiredKey = env.PROXY_API_KEY;
+    if (requiredKey) {
+      const provided = request.headers.get('x-api-key') || '';
+      if (provided !== requiredKey) {
+        return new Response('Unauthorized', { status: 401 });
+      }
+    }
+
+    const ok = await checkRateLimit(request);
+    if (!ok) return new Response('Rate limit exceeded', { status: 429 });
+
     const url = request.url;
     const proxyPath = new URL(url).pathname.replace('/proxy/', '');
     
@@ -202,6 +257,10 @@ router.all('/proxy/*', async (request) => {
       }
     }
 
+    // Try cache for GETs
+    const cached = await maybeServeFromCache(request, targetUrl);
+    if (cached) return cached;
+
     // Fetch target
     const response = await fetch(targetUrl, fetchOptions);
 
@@ -263,11 +322,16 @@ router.all('/proxy/*', async (request) => {
     responseHeaders.delete('content-encoding');
     responseHeaders.delete('content-length');
 
-    return new Response(responseBody, {
+    const out = new Response(responseBody, {
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders
     });
+
+    // Cache successful GET responses
+    maybeCacheResponse(request, targetUrl, out.clone());
+
+    return out;
 
   } catch (error) {
     console.error('Proxy error:', error);

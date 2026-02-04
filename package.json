@@ -8,6 +8,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "publish:pages": "npx wrangler pages publish dist --project-name=stealth-proxy",
+    "pages:dev": "npx wrangler pages dev dist --port 8787",
     "setup": "bash setup.sh"
   },
   "keywords": [

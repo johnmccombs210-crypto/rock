@@ -108,6 +108,20 @@ Notes:
 - This flow keeps you inside Cloudflare and GitHub web UIs; no terminal is required.
 - For full Worker functionality, prefer deploying the Worker itself via the Workers dashboard (Quick Edit) and use Pages for static assets if desired.
 
+### Chromebook (no Linux / locked device)
+
+If your Chromebook doesn't support Linux or you cannot run terminal commands locally, you can deploy entirely from the browser:
+
+1. Push this repository to GitHub (use the GitHub web UI if you can't run `git` locally).
+2. In the Cloudflare dashboard go to **Workers & Pages → Pages** and click **Create a project**.
+3. Choose **Connect to GitHub**, authorize Cloudflare, and select the repository `johnmccombs210-crypto/rock` and branch `main`.
+4. Set the build command to: `npm run build`
+5. Set the build output directory to: `dist`
+6. Leave the Functions directory as `functions` (Pages will pick up `functions/proxy.js` and expose it at `/api/proxy`).
+7. Click **Save and Deploy** — Cloudflare Pages will build and serve the site and Pages Functions.
+
+This requires only a browser and a Cloudflare account — no terminal or local Linux required.
+
 ---
 
 ## Troubleshooting & support
